@@ -6,9 +6,11 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
 
   const handleLogin = async () => {
     setError('');
+    setMessage('');
 
     try {
       const response = await fetch('/auth/login', {
@@ -22,8 +24,10 @@ const Login = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
+      setMessage(data.message || 'Login successful');
       console.log('Login successful:', data);
-      // Redirect or perform other actions on successful login
+      // Token'ı saklama ve diğer işlemler
+      localStorage.setItem('token', data.token);
     } catch (err) {
       setError(err.message);
     }
@@ -36,6 +40,7 @@ const Login = () => {
           Login
         </Typography>
         {error && <Alert severity="error">{error}</Alert>}
+        {message && <Alert severity="success">{message}</Alert>}
         <TextField
           label="Email"
           variant="outlined"
