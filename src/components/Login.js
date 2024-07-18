@@ -1,12 +1,23 @@
-// client/src/components/Login.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Button, Container, Typography, Box, Alert } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [csrfToken, setCsrfToken] = useState('');
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      const response = await fetch('/auth/csrf-token');
+      const data = await response.json();
+      setCsrfToken(data.csrfToken);
+    };
+    fetchCsrfToken();
+  }, []);
 
   const handleLogin = async () => {
     setError('');
@@ -16,7 +27,8 @@ const Login = () => {
       const response = await fetch('/auth/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken
         },
         body: JSON.stringify({ email, password })
       });
@@ -24,10 +36,9 @@ const Login = () => {
       if (!response.ok) {
         throw new Error(data.message || 'Something went wrong');
       }
-      setMessage(data.message || 'Login successful');
-      console.log('Login successful:', data);
-      // Token'ı saklama ve diğer işlemler
+      setMessage('Login successful');
       localStorage.setItem('token', data.token);
+      navigate('/');
     } catch (err) {
       setError(err.message);
     }
